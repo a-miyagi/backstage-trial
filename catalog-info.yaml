@@ -1,1 +1,94 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-system
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: a-miyagi
+  description: sampleアプリケーション
+spec:
+  owner: backend
 
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: api-gateway
+  namespace: default
+  annotations:
+    github.com/project-slug: a-miyagi/backstage-trial
+    backstage.io/techdocs-ref: dir:./docs/gateway
+  tags:
+    - go
+spec:
+  type: grpc
+  lifecycle: production
+  owner: guests
+  system: a-miyagi
+  definition: |
+    syntax = "proto3";
+
+    service Exampler {
+      rpc Example (ExampleMessage) returns (ExampleMessage) {};
+    }
+
+    message ExampleMessage {
+      string example = 1;
+    };
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage-sample
+  annotations:
+    github.com/project-slug: a-miyagi/backstage-trial
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - typescript
+    - backstage
+  links:
+    - url: https://github.com/a-miyagi/backstage-trial
+      title: project repository
+      icon: github
+spec:
+  type: service
+  owner: guests
+  lifecycle: production
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: user
+  description: User service
+  namespace: default
+  annotations:
+    github.com/project-slug: a-miyagi/backstage-trial
+    backstage.io/techdocs-ref: dir:./docs/user
+  tags:
+    - go
+  links:
+    - url: https://github.com/a-miyagi/backstage-trial
+      title: Repo
+      icon: github
+spec:
+  type: service
+  owner: guests
+  system: a-miyagi
+  lifecycle: production
+  providesApis: [api-gateway]
+  dependsOn:
+    - resource:default/user-db
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: user-db
+  description: Stores user details
+  annotations:
+    backstage.io/techdocs-ref: dir:./docs/user/db
+  tags:
+    - mongodb
+spec:
+  type: database
+  owner: guests
+  system: a-miyagi
